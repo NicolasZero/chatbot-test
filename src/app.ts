@@ -26,9 +26,15 @@ const {
 //     }
 // )
 
+const btn = [
+    {body:'Soy víctima de violencia y necesito ayuda inmediata'},
+    {body:'Deseo información'},
+    {body:'Quiereo consultar documentación'}
+]
+
 const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
-    .addAnswer(`Hola bienvenido al chat bot de pruebas`)
-    .addAnswer('Te gusta la pizza?',{buttons:[{body:'si'},{body:'no'}]})
+    .addAnswer(`Hola. Bienvenida al bot de Inamujer`)
+    .addAnswer('Elija una opción:',{buttons:btn})
 
 // const registerFlow = addKeyword<Provider, Database>(utils.setEvent('REGISTER_FLOW'))
 //     .addAnswer(`What is your name?`, { capture: true }, async (ctx, { state }) => {
