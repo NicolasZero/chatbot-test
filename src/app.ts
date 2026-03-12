@@ -9,7 +9,8 @@ const {
     numberId,
     verifyToken,
     version,
-    PORT = 3008
+    PORT = 3008,
+    ok
 } = process.env
 
 // const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
@@ -59,7 +60,7 @@ const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
 //     })
 
 const main = async () => {
-    // return console.log(PORT);
+    console.log("ok",ok);
     
     // const adapterFlow = createFlow([welcomeFlow,fullSamplesFlow])
     const adapterFlow = createFlow([welcomeFlow])
