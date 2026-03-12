@@ -2,16 +2,16 @@ import { join } from 'path'
 import { createBot, createProvider, createFlow, addKeyword, utils } from '@builderbot/bot'
 import { MemoryDB as Database } from '@builderbot/bot'
 import { MetaProvider as Provider } from '@builderbot/provider-meta'
+import {jwtToken,numberId,PORT,ok,saludo,verifyToken,version} from './config/config'
 
-
-const {
-    jwtToken,
-    numberId,
-    verifyToken,
-    version,
-    PORT = 3008,
-    ok
-} = process.env
+// const {
+//     jwtToken,
+//     numberId,
+//     verifyToken,
+//     version,
+//     PORT = 3008,
+//     ok
+// } = process.env
 
 // const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
 //     ['You can see the documentation here', '📄 https://builderbot.app/docs \n', 'Do you want to continue? *yes*'].join(
@@ -60,7 +60,9 @@ const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
 //     })
 
 const main = async () => {
-    console.log("ok",ok);
+    console.log("status: ",ok);
+    return console.log(saludo);
+    
     
     // const adapterFlow = createFlow([welcomeFlow,fullSamplesFlow])
     const adapterFlow = createFlow([welcomeFlow])
