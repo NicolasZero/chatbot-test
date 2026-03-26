@@ -1,31 +1,9 @@
-import { join } from 'path'
-import { createBot, createProvider, createFlow, addKeyword, utils } from '@builderbot/bot'
+import { createBot } from '@builderbot/bot'
 import { MemoryDB as Database } from '@builderbot/bot'
-import { MetaProvider as Provider } from '@builderbot/provider-meta'
-import {jwtToken,numberId,PORT,ok,saludo,verifyToken,version} from './config/config'
+import templates from './templates/createFlow'
+import { provider } from './provider/meta'
+import { config } from './config/config'
 
-// const {
-//     jwtToken,
-//     numberId,
-//     verifyToken,
-//     version,
-//     PORT = 3008,
-//     ok
-// } = process.env
-
-// const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
-//     ['You can see the documentation here', '📄 https://builderbot.app/docs \n', 'Do you want to continue? *yes*'].join(
-//         '\n'
-//     ),
-//     { capture: true },
-//     async (ctx, { gotoFlow, flowDynamic }) => {
-//         if (ctx.body.toLocaleLowerCase().includes('yes')) {
-//             return gotoFlow(registerFlow)
-//         }
-//         await flowDynamic('Thanks!')
-//         return
-//     }
-// )
 
 const btn = [
     {body:'Soy víctima de violencia y necesito ayuda inmediata'},
@@ -33,103 +11,25 @@ const btn = [
     {body:'Quiereo consultar documentación'}
 ]
 
-const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
-    .addAnswer(`Hola. Bienvenida al bot de Inamujer`)
-    .addAnswer('Elija una opción:',{buttons:btn})
+const main = async () => {   
 
-// const registerFlow = addKeyword<Provider, Database>(utils.setEvent('REGISTER_FLOW'))
-//     .addAnswer(`What is your name?`, { capture: true }, async (ctx, { state }) => {
-//         await state.update({ name: ctx.body })
-//     })
-//     .addAnswer('What is your age?', { capture: true }, async (ctx, { state }) => {
-//         await state.update({ age: ctx.body })
-//     })
-//     .addAction(async (_, { flowDynamic, state }) => {
-//         await flowDynamic(`${state.get('name')}, thanks for your information!: Your age: ${state.get('age')}`)
-//     })
-
-// const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEvent('SAMPLES')])
-//     .addAnswer(`💪 I'll send you a lot files...`)
-//     .addAnswer(`Send image from Local`, { media: join(process.cwd(), 'assets', 'sample.png') })
-//     .addAnswer(`Send video from URL`, {
-//         media: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTJ0ZGdjd2syeXAwMjQ4aWdkcW04OWlqcXI3Ynh1ODkwZ25zZWZ1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LCohAb657pSdHv0Q5h/giphy.mp4',
-//     })
-//     .addAnswer(`Send audio from URL`, { media: 'https://cdn.freesound.org/previews/728/728142_11861866-lq.mp3' })
-//     .addAnswer(`Send file from URL`, {
-//         media: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-//     })
-
-const main = async () => {
-    console.log("status: ",ok);
-    return console.log(saludo);
-    
-    
-    // const adapterFlow = createFlow([welcomeFlow,fullSamplesFlow])
-    const adapterFlow = createFlow([welcomeFlow])
-    const adapterProvider = createProvider(Provider, {
-        jwtToken: jwtToken,
-        numberId: numberId,
-        verifyToken: verifyToken,
-        version: version
-    })
-    const adapterDB = new Database()
-
-    const { handleCtx, httpServer } = await createBot({
-        flow: adapterFlow,
-        provider: adapterProvider,
-        database: adapterDB,
-    })
-
-    adapterProvider.server.post(
-        '/v1/messages',
-        handleCtx(async (bot, req, res) => {
-            const { number, message, urlMedia } = req.body
-            await bot.sendMessage(number, message, { media: urlMedia ?? null })
-            return res.end('sended')
-        })
+    const chatbot = await createBot(
+        {
+            flow: templates,
+            provider,
+            database: new Database()
+        },
+        {
+            queue: {
+                timeout: 20000,
+                concurrencyLimit: 50
+            }
+        }
     )
 
-    adapterProvider.server.post(
-        '/v1/register',
-        handleCtx(async (bot, req, res) => {
-            const { number, name } = req.body
-            await bot.dispatch('REGISTER_FLOW', { from: number, name })
-            return res.end('trigger')
-        })
-    )
+    const { handleCtx, httpServer } = await chatbot
 
-    adapterProvider.server.post(
-        '/v1/samples',
-        handleCtx(async (bot, req, res) => {
-            const { number, name } = req.body
-            await bot.dispatch('SAMPLES', { from: number, name })
-            return res.end('trigger')
-        })
-    )
-
-    adapterProvider.server.post(
-        '/v1/blacklist',
-        handleCtx(async (bot, req, res) => {
-            const { number, intent } = req.body
-            if (intent === 'remove') bot.blacklist.remove(number)
-            if (intent === 'add') bot.blacklist.add(number)
-
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            return res.end(JSON.stringify({ status: 'ok', number, intent }))
-        })
-    )
-
-    adapterProvider.server.get(
-        '/v1/blacklist/list',
-        handleCtx(async (bot, req, res) => {
-            const blacklist = bot.blacklist.getList()
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            return res.end(JSON.stringify({ status: 'ok', blacklist }))
-        })
-    )
-    
-
-    httpServer(+PORT)
+    httpServer(+config.PORT)
 }
 
 main()

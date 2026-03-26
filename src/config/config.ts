@@ -1,17 +1,17 @@
-function namee() {
-    console.log(7);
-    return "hola"
-}
-
-export const {
+const {
     jwtToken,
     numberId,
     verifyToken,
     version,
     PORT = 3008,
-    ok
 } = process.env
 
-export const saludo = namee()
+export const config = {
+    jwtToken,
+    numberId,
+    verifyToken,
+    version,
+    PORT
+}
 
-export default saludo
+export default config
